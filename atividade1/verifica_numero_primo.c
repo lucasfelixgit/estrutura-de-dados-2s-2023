@@ -1,13 +1,13 @@
 #include <stdio.h>
+#include <stdlib.h>
 
-    int main(){
+    int main(int argc, char *argv[]){
 
         int numero;
         int i;
         int result = 0;
 
-            printf("Digite um Numero: ");
-            scanf("%d", &numero);
+            numero = atoi(argv[1]);
             
 
                 for(i = 2; i < numero / 2; i++){
