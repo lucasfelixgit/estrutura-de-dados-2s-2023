@@ -1,38 +1,46 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 #include "lista.h"
 
-int main(int argc, char* argv[]){
+#define FILENAME "1kk_rand_float.csv"
 
-    No* lista_nao_ordenada = NULL;
-    No* lista_ordenada = NULL;
-    FILE *arquivo;
-    char linha[5];
-    float numero;
-  
-    arquivo = fopen("1kk_rand_float.csv", "r");
-    if (arquivo == NULL) 
-    {
-        printf("Arquivo Inexistente");
-        return 1;
+double calcula_tempo_medio(void (*funcao_inserir)(No*, float), No* lista, const char* filename) {
+    FILE* arquivo = fopen(filename, "r");
+    if (!arquivo) {
+        perror("Erro!");
+        exit(1);
     }
 
-    while (fgets(linha, sizeof(linha), arquivo) != NULL) {
-        numero = atof(linha);
-        if (lista_nao_ordenada == NULL) 
-        {
-            lista_nao_ordenada = no(numero, NULL);
-            lista_ordenada = no(numero, NULL);
-        } 
-        else 
-        {
-            No* n0 = no(numero, NULL);
-            lista_inserir_no(lista_nao_ordenada, n0);
-            lista_inserir_no_ordenado(&lista_ordenada, n0);
-        }
+    clock_t inicio, fim;
+    double tempo_total = 0;
+    int total_valores = 0;
+
+    float valor;
+    while (fscanf(arquivo, "%f", &valor) == 1) {
+        inicio = clock();
+        funcao_inserir(lista, valor);
+        fim = clock();
+        tempo_total += (double)(fim - inicio) / CLOCKS_PER_SEC;
+        total_valores++;
     }
 
-    lista_imprimir(lista_nao_ordenada);
-    
-    exit(0);
+    fclose(arquivo);
+    return tempo_total / total_valores;
+}
+
+int main() {
+    No* lista_nao_ordenada = lista_criar();
+    No* lista_ordenada = lista_criar();
+
+    double tempo_medio_nao_ordenada = calcula_tempo_medio(lista_inserir_no, lista_nao_ordenada, FILENAME);
+    double tempo_medio_ordenada = calcula_tempo_medio(lista_inserir_no_ordenado, lista_ordenada, FILENAME);
+
+    printf("Tempo medio insercao lista nao ordenada: %.6f seg\n", tempo_medio_nao_ordenada);
+    printf("Tempo medio insercao lista ordenada: %.6f seg\n", tempo_medio_ordenada);
+
+    lista_liberar(lista_nao_ordenada);
+    lista_liberar(lista_ordenada);
+
+    return 0;
 }
